@@ -2,213 +2,96 @@
 #define GRAPH_H
 
 #include <cstdint>
-#include <fstream>
-#include <iostream>
-#include <limits>
-#include <memory>
-#include <queue>
-#include <sstream>
+#include <optional>
+#include <ostream>
+#include <set>
 #include <vector>
 
-using std::endl;
-using std::ifstream;
-using std::make_unique;
-using std::numeric_limits;
+using std::optional;
 using std::ostream;
-using std::pair;
-using std::priority_queue;
-using std::queue;
+using std::set;
 using std::string;
-using std::stringstream;
-using std::unique_ptr;
+using std::uint32_t;
 using std::vector;
 
 template <typename T>
+using Matrix = vector<vector<T>>;
+using Vertex = uint32_t;
+using Weight = float;
+using Path = vector<Vertex>;
+
+struct WeightedVertex {
+  Vertex vertex;
+  Weight weight;
+
+  WeightedVertex(void) = default;
+
+  WeightedVertex(const Vertex vertex, const Weight weight);
+};
+
+bool operator<(const WeightedVertex &u, const WeightedVertex &v);
+
+bool operator>(const WeightedVertex &u, const WeightedVertex &v);
+
+struct Edge {
+  Vertex origin;
+  Vertex destination;
+  Weight weight;
+
+  Edge(void) = default;
+
+  Edge(const Vertex origin, const Vertex destination, const Weight weight);
+
+  static Weight max_weight(void);
+};
+
+bool operator<(const Edge &uv, const Edge &uw);
+
+bool operator>(const Edge &uv, const Edge &uw);
+
+bool operator==(const Edge &uv, const Edge &vu);
+
 class Graph {
  public:
-  Graph() = default;
+  Graph(void) = default;
 
-  Graph(const uint32_t vertices) {
-    this->vertices = vertices;
+  Graph(const uint32_t number_of_vertices);
 
-    adjacency_matrix.resize(vertices);
+  void add_edge(const Vertex origin, const Vertex destination,
+                const Weight weight = 0.0);
 
-    visited_nodes.resize(vertices);
+  vector<Edge> get_edges(void);
 
-    visited_nodes.assign(vertices, false);
-  }
+  set<Vertex> neighbors_of(const Vertex vertex);
 
-  void addEdge(const uint32_t source, const uint32_t destination,
-               float weight = 1.0) {
-    if (source >= vertices || destination >= vertices || weight < 0) {
-      return;
-    }
+  set<Vertex> get_vertices(void);
 
-    adjacency_matrix[source].push_back({static_cast<T>(destination), weight});
+  Path a_star_search(const Vertex origin, const Vertex destination);
 
-    adjacency_matrix[destination].push_back({static_cast<T>(source), weight});
-  }
+  Path breadth_first_search(const Vertex origin);
 
-  vector<uint32_t> breadth_first_search(const uint32_t source) {
-    if (source >= vertices) {
-      return {};
-    }
+  Path depth_first_search(const Vertex origin);
 
-    visited_nodes.assign(vertices, false);
+  Path dijkstra_shortest_path(const Vertex origin, const Vertex destination);
 
-    queue<T> queue;
-
-    visited_nodes[source] = true;
-
-    queue.push(static_cast<T>(source));
-
-    vector<uint32_t> nodes;
-
-    while (!queue.empty()) {
-      uint32_t node = static_cast<uint32_t>(queue.front());
-
-      nodes.push_back(node);
-
-      queue.pop();
-
-      for (const auto &adjacent_node : adjacency_matrix[node]) {
-        if (!visited_nodes[static_cast<uint32_t>(adjacent_node.first)]) {
-          visited_nodes[static_cast<uint32_t>(adjacent_node.first)] = true;
-
-          queue.push(adjacent_node.first);
-        }
-      }
-    }
-
-    visited_nodes.assign(vertices, false);
-
-    return nodes;
-  }
-
-  vector<uint32_t> depth_first_search(const uint32_t source) {
-    if (source >= vertices) {
-      return {};
-    }
-
-    static vector<uint32_t> nodes;
-
-    visited_nodes[source] = true;
-
-    nodes.push_back(source);
-
-    for (const auto &node : adjacency_matrix[source]) {
-      if (!visited_nodes[static_cast<uint32_t>(node.first)]) {
-        depth_first_search(static_cast<uint32_t>(node.first));
-      }
-    }
-
-    return nodes;
-  }
-
-  vector<float> dijkstras_shortest_paths(const uint32_t source) {
-    if (source >= vertices) {
-      return {};
-    }
-
-    priority_queue<pair<T, float>> queue;
-
-    vector<float> distances(vertices, numeric_limits<float>::max());
-
-    distances[source] = 0;
-
-    queue.push({source, 0.0});
-
-    while (!queue.empty()) {
-      uint32_t v = static_cast<uint32_t>(queue.top().first);
-
-      float weight = -queue.top().second;
-
-      queue.pop();
-
-      if (weight != distances[v]) {
-        continue;
-      }
-
-      for (const auto &edge : adjacency_matrix[v]) {
-        T node = edge.first;
-
-        float weight = edge.second;
-
-        if (distances[static_cast<uint32_t>(node)] > distances[v] + weight) {
-          distances[static_cast<uint32_t>(node)] = distances[v] + weight;
-
-          queue.push({node, -distances[static_cast<uint32_t>(node)]});
-        }
-      }
-    }
-
-    return distances;
-  }
-
-  static unique_ptr<Graph<T>> make(const string filename) {
-    ifstream file;
-
-    file.open(filename);
-
-    if (!file.is_open()) {
-      return NULL;
-    }
-
-    string line;
-
-    getline(file, line);
-
-    uint32_t vertices = static_cast<uint32_t>(atoi(line.c_str()));
-
-    unique_ptr<Graph<T>> graph = make_unique<Graph<T>>(vertices);
-
-    while (getline(file, line)) {
-      stringstream stream(line);
-
-      string buffer;
-
-      getline(stream, buffer, ',');
-
-      uint32_t u = static_cast<uint32_t>(atoi(buffer.c_str()));
-
-      getline(stream, buffer, ',');
-
-      uint32_t v = static_cast<uint32_t>(atoi(buffer.c_str()));
-
-      getline(stream, buffer);
-
-      float weight = atof(buffer.c_str());
-
-      graph->addEdge(u, v, weight);
-    }
-
-    file.close();
-
-    return graph;
-  }
-
-  friend ostream &operator<<(ostream &out, const Graph<T> graph) {
-    uint32_t node = 0;
-
-    for (const auto &row : graph.adjacency_matrix) {
-      out << node << ": ";
-
-      for (const auto &column : row) {
-        out << column.first << ' ';
-      }
-
-      ++node;
-
-      out << endl;
-    }
-
-    return out;
-  }
+  friend ostream &operator<<(ostream &out, const Graph &graph);
 
  private:
-  uint32_t vertices = 0;
-  vector<vector<pair<T, float>>> adjacency_matrix;
-  vector<bool> visited_nodes;
+  vector<Edge> edges;
+  uint32_t number_of_vertices;
+  Matrix<Weight> matrix;
+  set<Vertex> vertices;
+};
+
+enum Source {
+  ADJACENCY_LIST,
+  EDGE_LIST,
+};
+
+class GraphFactory {
+ public:
+  static optional<Graph> make(const string filename,
+                              const Source source = EDGE_LIST);
 };
 
 #endif
