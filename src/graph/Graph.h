@@ -45,7 +45,7 @@ class Graph {
  private:
   vector<Edge> edges;
   uint32_t number_of_vertices;
-  Matrix<Weight> matrix;
+  Matrix matrix;
   set<Vertex> vertices;
 };
 

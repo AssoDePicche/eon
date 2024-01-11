@@ -11,15 +11,7 @@ using std::stringstream;
 
 Graph::Graph(const uint32_t number_of_vertices)
     : number_of_vertices(number_of_vertices) {
-  matrix = Matrix<Weight>(number_of_vertices);
-
-  for (uint32_t i = 0; i < number_of_vertices; ++i) {
-    for (uint32_t j = 0; j < number_of_vertices; ++j) {
-      if (i == j) {
-        matrix[i][j] = 1;
-      }
-    }
-  }
+  matrix = Matrix::makeIdentityMatrix(number_of_vertices);
 }
 
 void Graph::add_edge(const Vertex origin, const Vertex destination,
@@ -50,7 +42,9 @@ vector<Edge> Graph::get_edges(void) { return edges; }
 
 set<Vertex> Graph::get_vertices(void) { return vertices; }
 
-uint32_t Graph::get_number_of_vertices(void) const { return number_of_vertices; }
+uint32_t Graph::get_number_of_vertices(void) const {
+  return number_of_vertices;
+}
 
 vector<Weight> &Graph::operator[](const uint32_t row) { return matrix[row]; }
 
