@@ -6,7 +6,7 @@ WF=-Wall -Wextra -Wpedantic -Werror -Wimplicit-fallthrough -Wsign-conversion
 FF=clang-format -i -style=Google
 CF=$(WF) -std=c++23 -g -I $(SRC)/graph -I $(SRC)/search
 
-all: weight.o matrix.o dsp.o edge.o path.o ksp.o bfs.o dfs.o graph.o $(APP)
+all: weight.o matrix.o dsp.o edge.o path.o bfs.o dfs.o graph.o $(APP)
 	$(FF) $(APP) && $(CC) $(CF) -o App.o $^ && mv *.o $(OUT) && rm $(SRC)/*/*.*.gch
 
 bfs.o: $(SRC)/search/BFS.*
