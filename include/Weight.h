@@ -1,4 +1,4 @@
-#pragma
+#pragma once
 
 using Weight = float;
 
