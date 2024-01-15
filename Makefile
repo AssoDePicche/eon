@@ -1,43 +1,25 @@
-OUT=./build
-SRC=./src
-APP=$(SRC)/App.cpp
-CC=g++
-WF=-Wall -Wextra -Wpedantic -Werror -Wimplicit-fallthrough -Wsign-conversion
-FF=clang-format -i -style=Google
-CF=$(WF) -std=c++23 -g -I $(SRC)/graph -I $(SRC)/search
+INCLUDE=./include
+SOURCE=./src
 
-all: weight.o matrix.o dsp.o edge.o path.o bfs.o dfs.o graph.o $(APP)
-	$(FF) $(APP) && $(CC) $(CF) -o App.o $^ && mv *.o $(OUT) && rm $(SRC)/*/*.*.gch
+CC = g++
+CFLAGS = -I $(INCLUDE) -std=c++23 -Wall -Wextra -Wpedantic -Werror -Wcast-align -Wimplicit-fallthrough -Wsign-conversion -g -O3
 
-bfs.o: $(SRC)/search/BFS.*
-	$(FF) $^ && $(CC) $(CF) -c $^
+SRCS = $(wildcard $(SOURCE)/*.cpp)
 
-dfs.o: $(SRC)/search/DFS.*
-	$(FF) $^ && $(CC) $(CF) -c $^
+OBJ = $(patsubst $(SOURCE)/.cpp, %.o, $(SRCS));
 
-dsp.o: $(SRC)/search/DSP.*
-	$(FF) $^ && $(CC) $(CF) -c $^
+App: $(OBJ)
+	$(CC) $(CFLAGS) -o $@ $^
 
-ath.o: $(SRC)/graph/Path.*
-	$(FF) $^ && $(CC) $(CF) -c $^
+%.o: $(SOURCE)/%.cpp
+	$(CC) $(CFLAGS) -c $< -o $@
 
-vertex.o: $(SRC)/graph/Vertex.*
-	$(FF) $^ && $(CC) $(CF) -c $^
-
-graph.o: $(SRC)/graph/Graph.*
-	$(FF) $^ && $(CC) $(CF) -c $^
-
-matrix.o: $(SRC)/graph/Matrix.*
-	$(FF) $^ && $(CC) $(CF) -c $^
-
-edge.o: $(SRC)/graph/Edge.*
-	$(FF) $^ && $(CC) $(CF) -c $^
-
-weight.o: $(SRC)/graph/Weight.*
-	$(FF) $^ && $(CC) $(CF) -c $^
-
-between.o: $(SRC)/graph/between.*
-	$(FF) $^ && $(CC) $(CF) -c $^
+format:
+	clang-format -i --style=Google --sort-includes --verbose $(INCLUDE)/* $(SOURCE)/*
 
 clean:
-	rm -rf $(OUT)/* && rm $(SRC)/*/*.*.gch
+	rm App
+
+.PHONY: format
+
+.PHONY: clean
