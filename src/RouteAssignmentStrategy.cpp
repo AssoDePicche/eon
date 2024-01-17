@@ -1,5 +1,10 @@
 #include <RouteAssignmentStrategy.h>
 
+#include <limits>
+#include <queue>
+
+using std::queue;
+
 Route::Route(list<Vertex> vertices) : vertices(vertices) {}
 
 list<Vertex>::iterator Route::begin(void) { return vertices.begin(); }
@@ -33,3 +38,50 @@ void Route::push(const Vertex vertex) { vertices.push_back(vertex); }
 void Route::reverse(void) { vertices.reverse(); }
 
 void Route::sort(void) { vertices.sort(); }
+
+Route BreadthFirstSearch::operator()(const Graph &graph, const Vertex origin,
+                                     const Vertex destination) const {
+  vector<bool> visited(graph.vertices(), false);
+
+  vector<int> parent(graph.vertices(), -1);
+
+  queue<Vertex> queue;
+
+  queue.push(origin);
+
+  visited[origin] = true;
+
+  while (!queue.empty()) {
+    const auto current = queue.front();
+
+    queue.pop();
+
+    for (Vertex neighbor = 0; neighbor < graph.vertices(); ++neighbor) {
+      if (graph[current][neighbor] != 0.0f && !visited[neighbor]) {
+        queue.push(neighbor);
+
+        visited[neighbor] = true;
+
+        parent[neighbor] = static_cast<int>(current);
+
+        if (neighbor == destination) {
+          Route route;
+
+          int vertex = static_cast<int>(destination);
+
+          while (vertex != -1) {
+            route.push(static_cast<Vertex>(vertex));
+
+            vertex = parent[static_cast<uint32_t>(vertex)];
+          }
+
+          route.reverse();
+
+          return route;
+        }
+      }
+    }
+  }
+
+  return Route();
+}
