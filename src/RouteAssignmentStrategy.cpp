@@ -108,11 +108,13 @@ Route BreadthFirstSearch::operator()(const Graph &graph,
     route.push(vertex);
 
     for (Vertex neighbor = 0; neighbor < graph.vertices(); ++neighbor) {
-      if (graph[vertex][neighbor] != 0.0f && !visited[neighbor]) {
-        queue.push(neighbor);
-
-        visited[neighbor] = true;
+      if (graph[vertex][neighbor] == 0.0f || visited[neighbor]) {
+        continue;
       }
+
+      queue.push(neighbor);
+
+      visited[neighbor] = true;
     }
   }
 
