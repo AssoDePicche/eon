@@ -2,8 +2,10 @@
 
 #include <limits>
 #include <queue>
+#include <stack>
 
 using std::queue;
+using std::stack;
 
 Route::Route(list<Vertex> vertices) : vertices(vertices) {}
 
@@ -84,4 +86,35 @@ Route BreadthFirstSearch::operator()(const Graph &graph, const Vertex origin,
   }
 
   return Route();
+}
+
+Route BreadthFirstSearch::operator()(const Graph &graph,
+                                     const Vertex origin) const {
+  vector<bool> visited(graph.vertices(), false);
+
+  queue<Vertex> queue;
+
+  queue.push(origin);
+
+  visited[origin] = true;
+
+  Route route;
+
+  while (!queue.empty()) {
+    const auto vertex = queue.front();
+
+    queue.pop();
+
+    route.push(vertex);
+
+    for (Vertex neighbor = 0; neighbor < graph.vertices(); ++neighbor) {
+      if (graph[vertex][neighbor] != 0.0f && !visited[neighbor]) {
+        queue.push(neighbor);
+
+        visited[neighbor] = true;
+      }
+    }
+  }
+
+  return route;
 }

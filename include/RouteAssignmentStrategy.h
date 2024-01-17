@@ -45,4 +45,8 @@ class BreadthFirstSearch : public RouteAssignmentStrategy {
  public:
   virtual Route operator()(const Graph &, const Vertex,
                            const Vertex) const override;
+
+  Route operator()(const Graph &, const Vertex) const;
 };
+
+using BFS = BreadthFirstSearch;
