@@ -120,3 +120,83 @@ Route BreadthFirstSearch::operator()(const Graph &graph,
 
   return route;
 }
+
+Route DepthFirstSearch::operator()(const Graph &graph, const Vertex origin,
+                                   const Vertex destination) const {
+  vector<bool> visited(graph.vertices(), false);
+
+  vector<int> parent(graph.vertices(), -1);
+
+  stack<Vertex> stack;
+
+  stack.push(origin);
+
+  visited[origin] = true;
+
+  while (!stack.empty()) {
+    const auto current = stack.top();
+
+    stack.pop();
+
+    for (Vertex neighbor = 0; neighbor < graph.vertices(); ++neighbor) {
+      if (graph[current][neighbor] != 0.0f && !visited[neighbor]) {
+        stack.push(neighbor);
+
+        visited[neighbor] = true;
+
+        parent[neighbor] = static_cast<int>(current);
+
+        if (neighbor == destination) {
+          Route route;
+
+          int vertex = static_cast<int>(destination);
+
+          while (vertex != -1) {
+            route.push(static_cast<Vertex>(vertex));
+
+            vertex = parent[static_cast<uint32_t>(vertex)];
+          }
+
+          route.reverse();
+
+          return route;
+        }
+      }
+    }
+  }
+
+  return Route();
+}
+
+Route DepthFirstSearch::operator()(const Graph &graph,
+                                   const Vertex origin) const {
+  vector<bool> visited(graph.vertices(), false);
+
+  stack<Vertex> stack;
+
+  stack.push(origin);
+
+  visited[origin] = true;
+
+  Route route;
+
+  while (!stack.empty()) {
+    const auto vertex = stack.top();
+
+    stack.pop();
+
+    route.push(vertex);
+
+    for (Vertex neighbor = 0; neighbor < graph.vertices(); ++neighbor) {
+      if (graph[vertex][neighbor] == 0.0f || visited[neighbor]) {
+        continue;
+      }
+
+      stack.push(neighbor);
+
+      visited[neighbor] = true;
+    }
+  }
+
+  return route;
+}
