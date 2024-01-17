@@ -6,16 +6,17 @@
 #include <set>
 #include <vector>
 
-#include "Edge.h"
-#include "Matrix.h"
-#include "Vertex.h"
-
 using std::optional;
 using std::ostream;
 using std::set;
 using std::string;
 using std::uint32_t;
 using std::vector;
+
+using Vertex = std::uint32_t;
+using Weight = float;
+
+Weight max_weight(void);
 
 class Graph {
  public:
@@ -25,13 +26,7 @@ class Graph {
 
   void add_edge(const Vertex, const Vertex, const Weight = 0.0f);
 
-  set<Vertex> neighbors_of(const Vertex) const;
-
-  vector<Edge> get_edges(void) const;
-
-  set<Vertex> get_vertices(void) const;
-
-  uint32_t get_number_of_vertices(void) const;
+  uint32_t vertices(void) const;
 
   vector<Weight> &operator[](const uint32_t);
 
@@ -42,8 +37,6 @@ class Graph {
   static optional<Graph> make(const string);
 
  private:
-  vector<Edge> edges;
-  uint32_t number_of_vertices;
-  Matrix matrix;
-  set<Vertex> vertices;
+  uint32_t _vertices;
+  vector<vector<Weight>> matrix;
 };
