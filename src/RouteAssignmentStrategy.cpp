@@ -205,49 +205,43 @@ Route DijkstraShortestPath::operator()(const Graph &graph, const Vertex origin,
                                        const Vertex destination) const {
   vector<bool> visited(graph.vertices(), false);
 
-  vector<Weight> weights(graph.vertices(), max_weight());
+  vector<Weight> weight(graph.vertices(), max_weight());
 
   vector<int> predecessors(graph.vertices(), -1);
 
-  weights[origin] = 0.0f;
+  weight[origin] = 0.0f;
 
   for (uint32_t iteration = 0; iteration < graph.vertices() - 1; ++iteration) {
-    uint32_t nearest_vertex = 0;
+    uint32_t nearest = 0;
 
     auto minimum_weight = max_weight();
 
     for (uint32_t vertex = 0; vertex < graph.vertices(); ++vertex) {
-      const auto visited_vertex = visited[vertex];
-
-      const auto weight = weights[vertex];
-
-      if (!visited_vertex && weight <= minimum_weight) {
-        nearest_vertex = vertex;
-
-        minimum_weight = weight;
+      if (visited[vertex] || weight[vertex] > minimum_weight) {
+        continue;
       }
+
+      nearest = vertex;
+
+      minimum_weight = weight[vertex];
     }
 
-    visited[nearest_vertex] = true;
+    visited[nearest] = true;
 
-    for (uint32_t adjacent_vertex = 0; adjacent_vertex < graph.vertices();
-         ++adjacent_vertex) {
-      const auto edge_weight = graph[nearest_vertex][adjacent_vertex];
+    for (uint32_t neighbor = 0; neighbor < graph.vertices(); ++neighbor) {
+      const auto is_adjacent =
+          graph[nearest][neighbor] != 0.0f && weight[nearest] != max_weight();
 
-      const auto weight = weights[nearest_vertex];
+      const auto minimum_weight =
+          weight[neighbor] <= weight[nearest] + graph[nearest][neighbor];
 
-      const auto new_weight = weight + edge_weight;
-
-      const auto visited_vertex = visited[adjacent_vertex];
-
-      const auto minimum_weight = weights[adjacent_vertex];
-
-      if (edge_weight != 0.0f && !visited_vertex && weight != max_weight() &&
-          new_weight < minimum_weight) {
-        weights[adjacent_vertex] = new_weight;
-
-        predecessors[adjacent_vertex] = static_cast<int>(nearest_vertex);
+      if (!is_adjacent || visited[neighbor] || minimum_weight) {
+        continue;
       }
+
+      weight[neighbor] = weight[nearest] + graph[nearest][neighbor];
+
+      predecessors[neighbor] = static_cast<int>(nearest);
     }
   }
 
