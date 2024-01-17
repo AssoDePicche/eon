@@ -35,3 +35,8 @@ class Route {
  private:
   list<Vertex> vertices;
 };
+
+class RouteAssignmentStrategy {
+ public:
+  virtual Route operator()(const Graph &, const Vertex, const Vertex) const = 0;
+};
