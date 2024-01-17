@@ -200,3 +200,77 @@ Route DepthFirstSearch::operator()(const Graph &graph,
 
   return route;
 }
+
+Route DijkstraShortestPath::operator()(const Graph &graph, const Vertex origin,
+                                       const Vertex destination) const {
+  vector<bool> visited(graph.vertices(), false);
+
+  vector<Weight> weights(graph.vertices(), max_weight());
+
+  vector<int> predecessors(graph.vertices(), -1);
+
+  weights[origin] = 0.0f;
+
+  for (uint32_t iteration = 0; iteration < graph.vertices() - 1; ++iteration) {
+    uint32_t nearest_vertex = 0;
+
+    auto minimum_weight = max_weight();
+
+    for (uint32_t vertex = 0; vertex < graph.vertices(); ++vertex) {
+      const auto visited_vertex = visited[vertex];
+
+      const auto weight = weights[vertex];
+
+      if (!visited_vertex && weight <= minimum_weight) {
+        nearest_vertex = vertex;
+
+        minimum_weight = weight;
+      }
+    }
+
+    visited[nearest_vertex] = true;
+
+    for (uint32_t adjacent_vertex = 0; adjacent_vertex < graph.vertices();
+         ++adjacent_vertex) {
+      const auto edge_weight = graph[nearest_vertex][adjacent_vertex];
+
+      const auto weight = weights[nearest_vertex];
+
+      const auto new_weight = weight + edge_weight;
+
+      const auto visited_vertex = visited[adjacent_vertex];
+
+      const auto minimum_weight = weights[adjacent_vertex];
+
+      if (edge_weight != 0.0f && !visited_vertex && weight != max_weight() &&
+          new_weight < minimum_weight) {
+        weights[adjacent_vertex] = new_weight;
+
+        predecessors[adjacent_vertex] = static_cast<int>(nearest_vertex);
+      }
+    }
+  }
+
+  Route route;
+
+  auto current_vertex = static_cast<int>(destination);
+
+  while (current_vertex != -1 &&
+         static_cast<uint32_t>(current_vertex) != origin) {
+    route.push(static_cast<uint32_t>(current_vertex));
+
+    current_vertex = predecessors[static_cast<uint32_t>(current_vertex)];
+  }
+
+  if (static_cast<uint32_t>(current_vertex) != origin) {
+    route.clear();
+
+    return route;
+  }
+
+  route.push(origin);
+
+  route.reverse();
+
+  return route;
+}

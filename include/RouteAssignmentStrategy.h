@@ -60,3 +60,9 @@ class DepthFirstSearch : public RouteAssignmentStrategy {
 };
 
 using DFS = DepthFirstSearch;
+
+class DijkstraShortestPath : public RouteAssignmentStrategy {
+ public:
+  virtual Route operator()(const Graph &, const Vertex,
+                           const Vertex) const override;
+};
